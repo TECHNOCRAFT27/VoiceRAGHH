@@ -1,4 +1,5 @@
 # Voice RAG
+![alt text](demo.png)
 
 A voice-enabled Retrieval-Augmented Generation (RAG) system built for HH Goa 2026.
 
