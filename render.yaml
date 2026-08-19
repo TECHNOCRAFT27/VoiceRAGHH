@@ -1,1 +1,9 @@
-web: uv run uvicorn voiceraghh.server:app --host 0.0.0.0 --port $PORT
+services:
+  - type: web
+    name: voiceraghh
+    runtime: docker
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false
+      - key: ELEVENLABS_API_KEY
+        sync: false
