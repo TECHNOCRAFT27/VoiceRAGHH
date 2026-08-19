@@ -39,37 +39,9 @@ async def startup():
     if index_path.exists() and (index_path / "index.faiss").exists():
         rag = VoiceRAG(vectorstore_path=str(index_path))
     else:
-        import polars as pl
-        import json
         import logging
         logger = logging.getLogger("voiceraghh")
-        
-        logger.info("Index not found. Building from HuggingFace dataset...")
-        
-        df = (
-            pl.scan_parquet("hf://datasets/ai4bharat/MSMARCO-XI/train/hintrain.parquet")
-            .head(50)
-            .collect()
-        )
-        data = df.to_dicts()
-        
-        texts = []
-        for item in data:
-            eng_passages = item.get("passages", {}).get("English_passages", [])
-            for p in eng_passages:
-                texts.append(p)
-            if item.get("Eng_Query"):
-                texts.append(item["Eng_Query"])
-            if item.get("Eng_Answer"):
-                texts.append(item["Eng_Answer"])
-        
-        texts = list(set(texts))
-        logger.info(f"Indexing {len(texts)} unique texts...")
-        
-        rag = VoiceRAG()
-        rag.build_index(texts)
-        rag.vectorstore.save(str(index_path))
-        logger.info("Index built and saved.")
+        logger.warning("Index not found at ./data/index. Queries will fail.")
 
 
 @app.post("/query", response_model=QueryResponse)

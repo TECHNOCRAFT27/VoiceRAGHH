@@ -2,7 +2,6 @@
 __pycache__/
 *.pyc
 .venv/
-data/
 *.index
 *.pkl
 download.log
