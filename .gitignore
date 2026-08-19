@@ -5,3 +5,8 @@ __pycache__/
 data/
 *.index
 *.pkl
+download.log
+sample_data.json
+*.egg-info/
+dist/
+build/
