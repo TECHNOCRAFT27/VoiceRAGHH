@@ -9,3 +9,4 @@ sample_data.json
 *.egg-info/
 dist/
 build/
+data/vectorstore_test/
