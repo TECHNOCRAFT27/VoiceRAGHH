@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice RAG | HH Goa 2026</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        :root {
+            --green: #0B6839;
+            --yellow: #FEE101;
+            --dark: #0a0a0a;
+            --cream: #fffef5;
+        }
+        
+        html { scroll-behavior: smooth; }
+        
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: var(--dark);
+            color: var(--cream);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        /* Animated gradient background */
+        .bg-gradient {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--dark) 0%, #0d1f12 50%, var(--dark) 100%);
+            z-index: -2;
+        }
+        
+        .bg-gradient::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(11,104,57,0.15) 0%, transparent 50%);
+            animation: pulse 8s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+        
+        /* Canvas for particles */
+        #particleCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(10,10,10,0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(254,225,1,0.1);
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
+        
+        header.scrolled {
+            padding: 0.75rem 2rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+        
+        .logo {
+            font-family: 'Space Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--yellow);
+            text-decoration: none;
+            letter-spacing: -0.02em;
+        }
+        
+        .logo span { color: var(--cream); }
+        
+        .tag {
+            background: var(--green);
+            color: var(--yellow);
+            padding: 0.4rem 1rem;
+            border-radius: 100px;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            animation: glow 2s ease-in-out infinite;
+        }
+        
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(11,104,57,0.5); }
+            50% { box-shadow: 0 0 40px rgba(11,104,57,0.8); }
+        }
+        
+        /* Scroll reveal */
+        .reveal {
+            opacity: 0;
+            transform: translateY(60px);
+            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .reveal-left {
+            opacity: 0;
+            transform: translateX(-60px);
+            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        .reveal-left.active {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .reveal-right {
+            opacity: 0;
+            transform: translateX(60px);
+            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        .reveal-right.active {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .reveal-scale {
+            opacity: 0;
+            transform: scale(0.8);
+            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        .reveal-scale.active {
+            opacity: 1;
+            transform: scale(1);
+        }
+        
+        /* Hero */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 6rem 2rem 4rem;
+            position: relative;
+        }
+        
+        .hero-badge {
+            display: inline-block;
+            background: rgba(11,104,57,0.3);
+            border: 1px solid rgba(11,104,57,0.5);
+            border-radius: 100px;
+            padding: 0.5rem 1.5rem;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--yellow);
+            margin-bottom: 2rem;
+            animation: badge-float 3s ease-in-out infinite;
+        }
+        
+        @keyframes badge-float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .hero h1 {
+            font-size: clamp(3rem, 10vw, 7rem);
+            font-weight: 700;
+            line-height: 0.95;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.04em;
+        }
+        
+        .hero h1 .highlight {
+            color: var(--yellow);
+            position: relative;
+            display: inline-block;
+        }
+        
+        .hero h1 .highlight::after {
+            content: '';
+            position: absolute;
+            bottom: 0.05em;
+            left: 0;
+            width: 100%;
+            height: 0.12em;
+            background: var(--green);
+            border-radius: 4px;
+            animation: underline 3s ease-in-out infinite;
+        }
+        
+        @keyframes underline {
+            0%, 100% { transform: scaleX(1); }
+            50% { transform: scaleX(1.05); }
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            color: rgba(255,254,245,0.6);
+            max-width: 500px;
+            line-height: 1.7;
+            margin-bottom: 3rem;
+        }
+        
+        .scroll-indicator {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            animation: bounce 2s infinite;
+        }
+        
+        .scroll-indicator span {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.7rem;
+            color: rgba(255,254,245,0.4);
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+        }
+        
+        .scroll-indicator .arrow {
+            width: 24px;
+            height: 24px;
+            border-right: 2px solid var(--yellow);
+            border-bottom: 2px solid var(--yellow);
+            transform: rotate(45deg);
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(10px); }
+        }
+        
+        /* Main card */
+        .main-card {
+            max-width: 700px;
+            margin: 0 auto 6rem;
+            padding: 0 1.5rem;
+        }
+        
+        .card {
+            background: linear-gradient(145deg, rgba(11,104,57,0.15) 0%, rgba(10,10,10,0.9) 100%);
+            border: 1px solid rgba(254,225,1,0.15);
+            border-radius: 24px;
+            padding: 2.5rem;
+            backdrop-filter: blur(20px);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s ease;
+        }
+        
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--yellow), transparent);
+            opacity: 0.5;
+        }
+        
+        .card::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(254,225,1,0.03) 0%, transparent 50%);
+            pointer-events: none;
+        }
+        
+        .card:hover {
+            border-color: rgba(254,225,1,0.3);
+            transform: translateY(-4px);
+            box-shadow: 0 30px 80px rgba(11,104,57,0.25);
+        }
+        
+        textarea {
+            width: 100%;
+            background: rgba(0,0,0,0.5);
+            border: 2px solid rgba(254,225,1,0.15);
+            border-radius: 16px;
+            padding: 1.25rem 1.5rem;
+            color: var(--cream);
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.1rem;
+            resize: none;
+            min-height: 120px;
+            transition: all 0.3s ease;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: var(--yellow);
+            box-shadow: 0 0 40px rgba(254,225,1,0.1);
+        }
+        
+        textarea::placeholder { color: rgba(255,254,245,0.35); }
+        
+        .actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 1.1rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.9rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .btn:active::before {
+            width: 300px;
+            height: 300px;
+        }
+        
+        .btn-primary {
+            background: var(--yellow);
+            color: var(--dark);
+        }
+        
+        .btn-primary:hover {
+            background: #fff;
+            transform: scale(1.02);
+            box-shadow: 0 15px 50px rgba(254,225,1,0.35);
+        }
+        
+        .btn-secondary {
+            background: var(--green);
+            color: var(--cream);
+        }
+        
+        .btn-secondary:hover {
+            background: #0d7a43;
+            transform: scale(1.02);
+        }
+        
+        .btn.recording {
+            animation: record-pulse 1s infinite;
+            background: #dc2626;
+        }
+        
+        @keyframes record-pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(220,38,38,0.7); }
+            50% { box-shadow: 0 0 0 15px rgba(220,38,38,0); }
+        }
+        
+        /* Examples */
+        .examples {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(254,225,1,0.1);
+        }
+        
+        .examples-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: rgba(255,254,245,0.4);
+            margin-bottom: 0.75rem;
+        }
+        
+        .example-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        
+        .example-chip {
+            background: rgba(11,104,57,0.25);
+            border: 1px solid rgba(11,104,57,0.4);
+            border-radius: 100px;
+            padding: 0.6rem 1.2rem;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.85rem;
+            color: rgba(255,254,245,0.8);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .example-chip:hover {
+            background: var(--green);
+            border-color: var(--yellow);
+            color: var(--yellow);
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 10px 30px rgba(11,104,57,0.3);
+        }
+        
+        /* Result */
+        .result-card {
+            display: none;
+            margin-top: 1.5rem;
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        .result-card.show { display: block; }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .result-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--yellow);
+        }
+        
+        .latency-badge {
+            background: rgba(34,197,94,0.2);
+            color: #22c55e;
+            padding: 0.3rem 0.8rem;
+            border-radius: 100px;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        
+        .latency-badge.warning { background: rgba(234,179,8,0.2); color: #eab308; }
+        .latency-badge.error { background: rgba(239,68,68,0.2); color: #ef4444; }
+        
+        .answer-box {
+            background: rgba(0,0,0,0.5);
+            border: 1px solid rgba(254,225,1,0.1);
+            border-radius: 16px;
+            padding: 1.5rem;
+            line-height: 1.8;
+            font-size: 1rem;
+        }
+        
+        .answer-box.guardrail {
+            border-color: rgba(239,68,68,0.3);
+            background: rgba(239,68,68,0.1);
+        }
+        
+        .sources {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(254,225,1,0.1);
+        }
+        
+        .sources-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: rgba(255,254,245,0.4);
+            margin-bottom: 0.5rem;
+        }
+        
+        .source-chip {
+            display: inline-block;
+            background: rgba(11,104,57,0.25);
+            border: 1px solid rgba(11,104,57,0.4);
+            border-radius: 8px;
+            padding: 0.35rem 0.7rem;
+            font-size: 0.75rem;
+            margin: 0.25rem;
+            color: rgba(255,254,245,0.7);
+        }
+        
+        /* Features section */
+        .features {
+            max-width: 1000px;
+            margin: 0 auto 6rem;
+            padding: 0 1.5rem;
+        }
+        
+        .features-title {
+            text-align: center;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: var(--yellow);
+            margin-bottom: 3rem;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .feature-card {
+            background: rgba(11,104,57,0.1);
+            border: 1px solid rgba(11,104,57,0.2);
+            border-radius: 20px;
+            padding: 2rem;
+            transition: all 0.4s ease;
+        }
+        
+        .feature-card:hover {
+            background: rgba(11,104,57,0.2);
+            border-color: var(--yellow);
+            transform: translateY(-5px);
+        }
+        
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .feature-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            color: var(--cream);
+        }
+        
+        .feature-card p {
+            font-size: 0.9rem;
+            color: rgba(255,254,245,0.6);
+            line-height: 1.6;
+        }
+        
+        /* Stats */
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 4rem;
+            margin: 0 auto 6rem;
+            padding: 3rem;
+            max-width: 800px;
+        }
+        
+        .stat {
+            text-align: center;
+            position: relative;
+        }
+        
+        .stat::after {
+            content: '';
+            position: absolute;
+            right: -2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 1px;
+            height: 40px;
+            background: rgba(254,225,1,0.2);
+        }
+        
+        .stat:last-child::after { display: none; }
+        
+        .stat-value {
+            font-family: 'Space Mono', monospace;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--yellow);
+            line-height: 1;
+        }
+        
+        .stat-label {
+            font-size: 0.8rem;
+            color: rgba(255,254,245,0.5);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-top: 0.5rem;
+        }
+        
+        /* Tech stack */
+        .tech {
+            max-width: 800px;
+            margin: 0 auto 6rem;
+            padding: 0 1.5rem;
+            text-align: center;
+        }
+        
+        .tech-title {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: var(--yellow);
+            margin-bottom: 2rem;
+        }
+        
+        .tech-logos {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
+        
+        .tech-logo {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.85rem;
+            color: rgba(255,254,245,0.7);
+            transition: all 0.3s ease;
+        }
+        
+        .tech-logo:hover {
+            background: rgba(11,104,57,0.3);
+            border-color: var(--green);
+            color: var(--cream);
+            transform: scale(1.05);
+        }
+        
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 3rem 2rem;
+            border-top: 1px solid rgba(254,225,1,0.1);
+            font-family: 'Space Mono', monospace;
+            font-size: 0.75rem;
+            color: rgba(255,254,245,0.4);
+        }
+        
+        footer a {
+            color: var(--yellow);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        footer a:hover { color: #fff; }
+        
+        /* Spinner */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(254,225,1,0.3);
+            border-top-color: var(--yellow);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            vertical-align: middle;
+            margin-right: 0.5rem;
+        }
+        
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        /* Responsive */
+        @media (max-width: 640px) {
+            .actions { flex-direction: column; }
+            .stats { flex-direction: column; gap: 2rem; }
+            .stat::after { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-gradient"></div>
+    <canvas id="particleCanvas"></canvas>
+    
+    <header id="header">
+        <a href="/" class="logo">VOICE<span>RAG</span></a>
+        <span class="tag">HH Goa 2026</span>
+    </header>
+    
+    <section class="hero">
+        <div class="hero-badge reveal">#RAGInGoa</div>
+        <h1 class="reveal-scale">Ask with your<br><span class="highlight">voice</span></h1>
+        <p class="reveal">Speak or type a question. We'll find the answer from the MSMARCO-XI dataset using RAG.</p>
+        <div class="scroll-indicator">
+            <span>Scroll</span>
+            <div class="arrow"></div>
+        </div>
+    </section>
+    
+    <div class="main-card">
+        <div class="card reveal">
+            <textarea id="query" placeholder="Type your question here..." rows="3"></textarea>
+            
+            <div class="actions">
+                <button class="btn btn-primary" onclick="sendText()">Ask Question</button>
+                <button class="btn btn-secondary" id="micBtn" onclick="toggleRecording()">🎤 Voice Input</button>
+            </div>
+            
+            <div class="examples">
+                <div class="examples-label">Try asking:</div>
+                <div class="example-chips">
+                    <button class="example-chip" onclick="askExample(this)">What is CVS software?</button>
+                    <button class="example-chip" onclick="askExample(this)">What is a pediatric doctor?</button>
+                    <button class="example-chip" onclick="askExample(this)">Who is Evelyn?</button>
+                    <button class="example-chip" onclick="askExample(this)">What are elevators?</button>
+                </div>
+            </div>
+            
+            <div id="result" class="result-card">
+                <div class="result-header">
+                    <span class="result-label">Answer</span>
+                    <span id="latency" class="latency-badge"></span>
+                </div>
+                <div id="answer" class="answer-box"></div>
+                <div id="sources" class="sources" style="display: none;">
+                    <div class="sources-label">Sources</div>
+                    <div id="sourceList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="features">
+        <div class="features-title reveal">How it works</div>
+        <div class="features-grid">
+            <div class="feature-card reveal-left">
+                <div class="feature-icon">🎤</div>
+                <h3>Voice Input</h3>
+                <p>Speak your question using ElevenLabs speech-to-text. Supports multiple languages.</p>
+            </div>
+            <div class="feature-card reveal">
+                <div class="feature-icon">🔍</div>
+                <h3>Smart Retrieval</h3>
+                <p>FAISS vector search with 4 chunking strategies finds the most relevant context.</p>
+            </div>
+            <div class="feature-card reveal-right">
+                <div class="feature-icon">🤖</div>
+                <h3>AI Answer</h3>
+                <p>Groq-powered LLM generates accurate answers grounded in the retrieved documents.</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="stats">
+        <div class="stat reveal-left">
+            <div class="stat-value" data-count="579">0</div>
+            <div class="stat-label">Documents</div>
+        </div>
+        <div class="stat reveal">
+            <div class="stat-value">&lt;1ms</div>
+            <div class="stat-label">Cached Latency</div>
+        </div>
+        <div class="stat reveal-right">
+            <div class="stat-value" data-count="4">0</div>
+            <div class="stat-label">Chunking Strategies</div>
+        </div>
+    </div>
+    
+    <div class="tech">
+        <div class="tech-title reveal">Built with</div>
+        <div class="tech-logos reveal">
+            <div class="tech-logo">FastAPI</div>
+            <div class="tech-logo">FAISS</div>
+            <div class="tech-logo">ElevenLabs</div>
+            <div class="tech-logo">Groq</div>
+            <div class="tech-logo">FastEmbed</div>
+            <div class="tech-logo">Polars</div>
+        </div>
+    </div>
+    
+    <footer>
+        Built for <a href="https://hhgoa.com/" target="_blank">HH Goa 2026</a> | #RAGInGoa
+    </footer>
+
+    <script>
+        // Particle canvas animation
+        const canvas = document.getElementById('particleCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let mouse = { x: 0, y: 0 };
+        
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        
+        document.addEventListener('mousemove', e => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        });
+        
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+            
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = canvas.height + 10;
+                this.size = Math.random() * 3 + 1;
+                this.speedY = -(Math.random() * 0.5 + 0.2);
+                this.speedX = (Math.random() - 0.5) * 0.3;
+                this.opacity = Math.random() * 0.5 + 0.1;
+                this.color = Math.random() > 0.5 ? '#FEE101' : '#0B6839';
+            }
+            
+            update() {
+                this.y += this.speedY;
+                this.x += this.speedX;
+                
+                const dx = mouse.x - this.x;
+                const dy = mouse.y - this.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < 150) {
+                    this.x -= dx * 0.01;
+                    this.y -= dy * 0.01;
+                }
+                
+                if (this.y < -10 || this.x < -10 || this.x > canvas.width + 10) {
+                    this.reset();
+                }
+            }
+            
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.opacity;
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            }
+        }
+        
+        for (let i = 0; i < 80; i++) {
+            const p = new Particle();
+            p.y = Math.random() * canvas.height;
+            particles.push(p);
+        }
+        
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animateParticles);
+        }
+        animateParticles();
+        
+        // Scroll reveal
+        const revealElements = document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale');
+        
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach((entry, index) => {
+                if (entry.isIntersecting) {
+                    setTimeout(() => {
+                        entry.target.classList.add('active');
+                    }, index * 100);
+                }
+            });
+        }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+        
+        revealElements.forEach(el => revealObserver.observe(el));
+        
+        // Header scroll effect
+        const header = document.getElementById('header');
+        window.addEventListener('scroll', () => {
+            header.classList.toggle('scrolled', window.scrollY > 50);
+        });
+        
+        // Counter animation
+        const counters = document.querySelectorAll('[data-count]');
+        const counterObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const target = parseInt(entry.target.dataset.count);
+                    let current = 0;
+                    const increment = target / 50;
+                    const timer = setInterval(() => {
+                        current += increment;
+                        if (current >= target) {
+                            entry.target.textContent = target;
+                            clearInterval(timer);
+                        } else {
+                            entry.target.textContent = Math.floor(current);
+                        }
+                    }, 30);
+                    counterObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.5 });
+        
+        counters.forEach(c => counterObserver.observe(c));
+        
+        // Card mouse tracking
+        const card = document.querySelector('.card');
+        card.addEventListener('mousemove', e => {
+            const rect = card.getBoundingClientRect();
+            const x = ((e.clientX - rect.left) / rect.width) * 100;
+            const y = ((e.clientY - rect.top) / rect.height) * 100;
+            card.style.setProperty('--mouse-x', x + '%');
+            card.style.setProperty('--mouse-y', y + '%');
+        });
+        
+        // Voice RAG functionality
+        let mediaRecorder;
+        let audioChunks = [];
+        let isRecording = false;
+        
+        async function sendText() {
+            const query = document.getElementById('query').value.trim();
+            if (!query) return;
+            
+            const resultDiv = document.getElementById('result');
+            const answerDiv = document.getElementById('answer');
+            const latencyDiv = document.getElementById('latency');
+            
+            resultDiv.classList.add('show');
+            answerDiv.innerHTML = '<span class="spinner"></span> Searching knowledge base...';
+            answerDiv.classList.remove('guardrail');
+            latencyDiv.textContent = '';
+            
+            try {
+                const res = await fetch('/query', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query })
+                });
+                const data = await res.json();
+                displayResult(data);
+            } catch (e) {
+                answerDiv.textContent = 'Error: ' + e.message;
+                answerDiv.classList.add('guardrail');
+            }
+        }
+        
+        async function sendVoice(audioBlob) {
+            const resultDiv = document.getElementById('result');
+            const answerDiv = document.getElementById('answer');
+            const latencyDiv = document.getElementById('latency');
+            
+            resultDiv.classList.add('show');
+            answerDiv.innerHTML = '<span class="spinner"></span> Transcribing audio...';
+            answerDiv.classList.remove('guardrail');
+            latencyDiv.textContent = '';
+            
+            const formData = new FormData();
+            formData.append('file', audioBlob, 'audio.webm');
+            
+            try {
+                const res = await fetch('/voice', { method: 'POST', body: formData });
+                const data = await res.json();
+                displayResult(data);
+            } catch (e) {
+                answerDiv.textContent = 'Error: ' + e.message;
+                answerDiv.classList.add('guardrail');
+            }
+        }
+        
+        function displayResult(data) {
+            const answerDiv = document.getElementById('answer');
+            const latencyDiv = document.getElementById('latency');
+            const sourcesDiv = document.getElementById('sources');
+            const sourceList = document.getElementById('sourceList');
+            
+            answerDiv.textContent = data.answer;
+            answerDiv.classList.toggle('guardrail', data.guardrail_triggered);
+            
+            latencyDiv.textContent = data.latency_ms.toFixed(0) + 'ms';
+            latencyDiv.className = 'latency-badge' + 
+                (data.latency_ms < 200 ? '' : data.latency_ms < 500 ? ' warning' : ' error');
+            
+            if (data.sources && data.sources.length > 0) {
+                sourcesDiv.style.display = 'block';
+                sourceList.innerHTML = data.sources.map(s => 
+                    `<span class="source-chip">${s.text.substring(0, 50)}...</span>`
+                ).join('');
+            } else {
+                sourcesDiv.style.display = 'none';
+            }
+        }
+        
+        async function toggleRecording() {
+            const btn = document.getElementById('micBtn');
+            
+            if (isRecording) {
+                mediaRecorder.stop();
+                btn.classList.remove('recording');
+                btn.innerHTML = '🎤 Voice Input';
+                isRecording = false;
+            } else {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
+                    
+                    mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+                    mediaRecorder.onstop = () => {
+                        const blob = new Blob(audioChunks, { type: 'audio/webm' });
+                        sendVoice(blob);
+                        stream.getTracks().forEach(t => t.stop());
+                    };
+                    
+                    mediaRecorder.start();
+                    btn.classList.add('recording');
+                    btn.innerHTML = '⏹ Stop Recording';
+                    isRecording = true;
+                } catch (e) {
+                    alert('Microphone access denied');
+                }
+            }
+        }
+        
+        document.getElementById('query').addEventListener('keydown', e => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendText();
+            }
+        });
+        
+        function askExample(btn) {
+            document.getElementById('query').value = btn.textContent;
+            sendText();
+        }
+    </script>
+</body>
+</html>
