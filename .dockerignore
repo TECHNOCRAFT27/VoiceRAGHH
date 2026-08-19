@@ -3,7 +3,8 @@
 __pycache__
 *.pyc
 .env
-data/
 *.index
 *.pkl
 .venv/
+data/vectorstore_test/
+data/embeddings_cache.json
